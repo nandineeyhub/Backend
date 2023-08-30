@@ -54,6 +54,15 @@ class UserController extends Controller
             'password'=>['required']
         ]);
 
+        if($validator->fails()){
+            $response = $validator->messages()->first();
+            return response([
+                'message'=> $response,
+                'data'=> null,
+                'isSuccess'=> false,
+            ],200);
+        }
+
         $user = User::where('email',$request->email)->first();
         if($user && Hash::check($request->password, $user->password)){
             $token = $user->createToken('mytoken')->plainTextToken;
@@ -76,15 +85,15 @@ class UserController extends Controller
         auth()->user()->tokens()->delete(); 
         return response([
             'message' => 'Logout successful !! ',
-            'status' => 'Success',
+            'isSuccess' => true,
+            'data'=>null,
         ],200); 
     }
 
     public function loggedUser(Request $request){
         return response([
-            'user'=> auth()->user(),
-            'status'=>'Success',
-            'message'=>"Loggd User Data"
+            'isSuccess'=> true,
+            'data'=>auth()->user()
         ],200);
     }
 
@@ -96,7 +105,7 @@ class UserController extends Controller
         $loggedUser->password = Hash::make($request->password);
         $loggedUser->save();
         return response([
-            'status'=>'Success',
+            'isSuccess'=> false,
             'message'=>"Password Changed",
         ],200);
     }
