@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
     public function register(Request $request){
-
        $validator = Validator::make($request->all(), [
             'name'=>'required',
             'email'=>['required','email','unique:users,email'],
@@ -19,18 +18,8 @@ class UserController extends Controller
     
         if($validator->fails()){
             $response = $validator->messages()->first();
-            return response([
-                'message'=> $response,
-                'data'=> null,
-                'isSuccess'=> false,
-            ],200);
+            return hresponse(false, null, $response);
         }
-
-        // $request->validate([
-        //     'name'=>'required',
-        //     'email'=>['required','email','unique:users,email'],
-        //     'password'=>['required','confirmed'],
-        // ]);
        
         $user =  User::create([
             'name' => $request->name,
@@ -40,11 +29,7 @@ class UserController extends Controller
 
         // $token = $user->createToken('mytoken')->plainTextToken;
             
-        return response([
-            'message'=>'Registration Successful',
-            'data'=> $user,
-            'isSuccess'=> true,
-        ],200);
+        return hresponse(true, $user, "Registration Succcessful !!");
     }
 
     public function login(Request $request)
@@ -56,45 +41,29 @@ class UserController extends Controller
 
         if($validator->fails()){
             $response = $validator->messages()->first();
-            return response([
-                'message'=> $response,
-                'data'=> null,
-                'isSuccess'=> false,
-            ],200);
+            return hresponse(false, null, $response);
         }
 
         $user = User::where('email',$request->email)->first();
-        if($user && Hash::check($request->password, $user->password)){
+        if($user && Hash::check($request->password, $user->password) && $user->status == "Active"){
             $token = $user->createToken('mytoken')->plainTextToken;
             $user->token=$token;
             $user->isSuperAdmin= $user->user_type == 1 ? false : true;
-            return response([    
-                'message'=>'Login Successful',
-                'data'=> $user,
-                'isSuccess'=> true,
-            ],200);
+
+            return hresponse(true, $user, 'Login Successful');
         }
-        return response([
-            'message'=>'Wrong Credentials',
-            'isSuccess'=> false,
-            'data'=>null
-        ],200);
+        $message = $user->status == "Active" ? 'Wrong Credentials' : "Your status is not active please contact with SuperAdmin";
+
+        return hresponse(false, null, $message);
     }
 
     public function logout(){
-        auth()->user()->tokens()->delete(); 
-        return response([
-            'message' => 'Logout successful !! ',
-            'isSuccess' => true,
-            'data'=>null,
-        ],200); 
+        auth()->user()->tokens()->delete();
+        return hresponse(true, null, 'Logout successful !! ');
     }
 
     public function loggedUser(Request $request){
-        return response([
-            'isSuccess'=> true,
-            'data'=>auth()->user()
-        ],200);
+        return hresponse(true, auth()->user(), '');
     }
 
     public function changePassword(Request $request){
@@ -104,9 +73,64 @@ class UserController extends Controller
         $loggedUser = auth()->user();
         $loggedUser->password = Hash::make($request->password);
         $loggedUser->save();
-        return response([
-            'isSuccess'=> false,
-            'message'=>"Password Changed",
-        ],200);
+        return hresponse(false, auth()->user(), 'Password Changed');
+    }
+
+    public function showAllClients(){
+        $user = User::where('user_type','1')->get();
+        if($user){
+            return hresponse(true, $user, 'All clients list !!');
+        }
+        return hresponse(false, null, 'No Record Found !!');
+    }
+
+    public function updateClient(Request $request, string $id)
+    {
+        $validator = Validator::make($request->all(),[
+            'name'=> 'required',
+            'email'=> ['required','email','unique:users,email,'.$id],
+        ]);
+        if($validator->fails()){
+            $response = $validator->messages()->first();
+            return hresponse(false, null, $response);
+        }
+
+        $client = User::find($id);
+        
+        if($client){
+            $client->first();
+            $client->update($request->all());
+            return hresponse(true, $client, 'Client updated Successful !!');
+        }
+        else{
+            return hresponse(false, null, 'Client Not Found !!');
+        }
+    }
+
+    public function deleteClient(string $id)
+    {
+        $client = User::find($id);
+        if($client){
+            $client->delete();
+            return hresponse(true, null, 'Client Deleted Successfully !!');
+        }
+        return hresponse(false, null, 'Client Not Found !!');
+    }
+
+    public function clientStatusUpdate(Request $request, string $id){
+        if($request->status){
+            $client = User::find($id);
+        
+            if($client){
+                $client->first();
+                $client->status = $request->status;
+                $client->save();
+                return hresponse(true, $client, 'Client Status Updated !!');
+            }
+            else{
+                return hresponse(false, null, 'Client Not Found !!');
+            }
+        }
+        return hresponse(false, null, 'Please select status !!');
     }
 }

@@ -39,21 +39,26 @@ Route::post('/register',[UserController::class,'register']);
 Route::post('/login',[UserController::class,'login']);
 
 Route::middleware(['auth:sanctum'])->group(function(){
-    Route::get('/students',[StudentController::class, 'index']);
 
-    Route::get('/students/{id}',[StudentController::class, 'show']);
+    // Route::get('/students/{id}',[StudentController::class, 'show']);
 
-    Route::put('/students/{id}',[StudentController::class, 'update']);
+    // Route::post('/students',[StudentController::class, 'store']);
 
-    Route::post('/students',[StudentController::class, 'store']);
+    // Route::get('/students/search/{city}',[StudentController::class, 'search']);
 
-    Route::get('/students/search/{city}',[StudentController::class, 'search']);
-
-    Route::delete('/students/{id}',[StudentController::class, 'destroy']);
+    
 
     Route::post('/logout',[UserController::class, 'logout']);
 
     Route::get('/loggeduser',[UserController::class, 'loggedUser']);
 
     Route::post('/changepassword',[UserController::class, 'changePassword']);
+
+    Route::get('/show-all-clients',[UserController::class, 'showAllClients']);
+
+    Route::put('/client/{id}',[UserController::class, 'updateClient']);
+
+    Route::delete('/client/{id}',[UserController::class, 'deleteClient']);
+
+    Route::patch('client/status/upate/{id}',[UserController::class, 'clientStatusUpdate']);
 });
