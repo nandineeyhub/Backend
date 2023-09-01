@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use SebastianBergmann\CodeCoverage\Node\Builder;
 class UserController extends Controller
 {
     public function register(Request $request){
@@ -14,6 +16,13 @@ class UserController extends Controller
             'name'=>'required',
             'email'=>['required','email','unique:users,email'],
             'password'=>['required','confirmed'],
+            'phoneNo'=>['required','min:11','numeric'],
+            'contactPerson'=>['required'],
+            'address'=>['required'],
+            'collegeCode'=>['numeric'],
+            'stateID'=>['numeric'],
+            'countryID'=>['numeric'],
+            'cityID'=>['numeric'],
         ]);
     
         if($validator->fails()){
@@ -25,6 +34,13 @@ class UserController extends Controller
             'name' => $request->name,
             'email'=> $request->email,
             'password'=> Hash::make($request->password),
+            'phoneNo'=> $request->phoneNo,
+            'contactPerson'=> $request->contactPerson,
+            'address'=> $request->address,
+            'collegeCode'=> $request->collegeCode,
+            'stateID'=> $request->stateID,
+            'countryID'=> $request->countryID,
+            'cityID'=> $request->cityID,
         ]);
 
         // $token = $user->createToken('mytoken')->plainTextToken;
@@ -34,27 +50,30 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email'=>['required','email'],
-            'password'=>['required']
-        ]);
-
-        if($validator->fails()){
-            $response = $validator->messages()->first();
-            return hresponse(false, null, $response);
-        }
-
         $user = User::where('email',$request->email)->first();
-        if($user && Hash::check($request->password, $user->password) && $user->status == "Active"){
-            $token = $user->createToken('mytoken')->plainTextToken;
-            $user->token=$token;
-            $user->isSuperAdmin= $user->user_type == 1 ? false : true;
-
-            return hresponse(true, $user, 'Login Successful');
+        if($user){
+            $validator = Validator::make($request->all(), [
+                'email'=>['required','email'],
+                'password'=>['required']
+            ]);
+    
+            if($validator->fails()){
+                $response = $validator->messages()->first();
+                return hresponse(false, null, $response);
+            }
+    
+            if(Hash::check($request->password, $user->password) && $user->status == "Active"){
+                $token = $user->createToken('mytoken')->plainTextToken;
+                $user->token=$token;
+                $user->isSuperAdmin= $user->user_type == 1 ? false : true;
+    
+                return hresponse(true, $user, 'Login Successful');
+            }
+            $message = $user->status == "Active" ? 'Wrong Password' : "Your status is not active please contact with SuperAdmin";
+    
+            return hresponse(false, null, $message);
         }
-        $message = $user->status == "Active" ? 'Wrong Credentials' : "Your status is not active please contact with SuperAdmin";
-
-        return hresponse(false, null, $message);
+        return hresponse(false, null, "User Not Found !!");
     }
 
     public function logout(){
@@ -76,10 +95,30 @@ class UserController extends Controller
         return hresponse(false, auth()->user(), 'Password Changed');
     }
 
-    public function showAllClients(){
-        $user = User::where('user_type','1')->get();
-        if($user){
-            return hresponse(true, $user, 'All clients list !!');
+    public function showAllClients(Request $req){
+        $res = [];
+        $search = $req->search ? $req->search : "";
+        $limit = $req->limit ? $req->limit : 17;
+        $status = $req->status ? $req->status : "";
+
+        if(!empty($search) && $status == ""){
+            $users = User::where('name','LIKE',"%".$search."%")->where('userType','=','1')->paginate($limit);
+        }
+        else if($status != "" && $search == ""){
+            $users = User::where('status',"=","$status")->Where('userType','=','1')->paginate($limit);
+        }
+        else if(!empty($search) && !empty($status)){
+            $users = User::where('status',"=","$status")->where('name','LIKE',"%".$search."%")->Where('userType','=','1')->paginate($limit);
+        }
+        else{
+            $users = User::where('userType','1')->paginate($limit);
+        }
+
+        $res['users'] = $users;
+        $res['totalRecord'] = $users->count();
+        if($users){
+    
+            return hresponse(true, $res, 'All clients list !!');
         }
         return hresponse(false, null, 'No Record Found !!');
     }
@@ -89,6 +128,13 @@ class UserController extends Controller
         $validator = Validator::make($request->all(),[
             'name'=> 'required',
             'email'=> ['required','email','unique:users,email,'.$id],
+            'phoneNo'=>['required','min:11','numeric'],
+            'contactPerson'=>['required'],
+            'address'=>['required'],
+            'collegeCode'=>['numeric'],
+            'stateID'=>['numeric'],
+            'countryID'=>['numeric'],
+            'cityID'=>['numeric'],
         ]);
         if($validator->fails()){
             $response = $validator->messages()->first();
