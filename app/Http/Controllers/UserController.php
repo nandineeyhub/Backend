@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use SebastianBergmann\CodeCoverage\Node\Builder;
+use App\Models\State;
+use App\Models\City;
 class UserController extends Controller
 {
     public function register(Request $request){
@@ -178,5 +180,22 @@ class UserController extends Controller
             }
         }
         return hresponse(false, null, 'Please select status !!');
+    }
+
+    public function showCity($stateID){
+       if($stateID){
+        $res = [];
+        // $state = State::find($stateID);
+        $city = City::where('stateID','=',$stateID)->get();
+        dd($city);
+        if(!empty($city['items'])){
+            dd($city);
+            $res['cities'] = $city;
+            $res['totalCities'] = $city->count();
+            return hresponse(true, $res, 'All Cities list !!');
+        }
+        return hresponse(false, null, 'City Not Found !!');
+       }
+        return hresponse(false, null, 'Please select correct State !!');
     }
 }
