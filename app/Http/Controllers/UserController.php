@@ -184,19 +184,16 @@ class UserController extends Controller
 
     public function showCity($stateID){
        if($stateID){
-        $res = [];
-        // $state = State::find($stateID);
         $city = City::where('stateID','=',$stateID)->get();
-        // dd($city);
         if(!empty($city->toArray())){
-            // dd($city);
-            $res['cities'] = $city;
-            // $res['StateName'] = $state->stateName;
-            // $res['totalCities'] = $city->count();
-            return hresponse(true, $res, 'All Available Cities list !!');
+            return hresponse(true, $city, 'All Available Cities list !!');
         }
         return hresponse(false, null, 'City Not Found !!');
        }
         return hresponse(false, null, 'Please select correct State !!');
+    }
+
+    public function showState(){
+        return User::with('getState')->get();
     }
 }
