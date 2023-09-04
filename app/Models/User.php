@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\State;
-use App\Models\City;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
@@ -55,8 +54,14 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    function state(): HasOne
+    public function state():HasMany
     {
-        return $this->hasOne(State::class);
+        return $this->hasMany(State::class,'stateID','stateID');
     }
+
+    public function city():HasMany
+    {
+        return $this->hasMany(City::class,'cityID','cityID');
+    }
+
 }
