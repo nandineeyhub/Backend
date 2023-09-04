@@ -21,9 +21,9 @@ return new class extends Migration
             $table->enum('status',['Active','Inactive'])->default('Active');
             $table->string('collegeCode')->unique()->nullable();
             $table->string('address')->nullable();
-            $table->string('stateID')->unique()->nullable();
-            $table->string('countryID')->unique()->nullable();
-            $table->string('cityID')->unique()->nullable();
+            $table->string('stateID')->nullable();
+            $table->string('countryID')->nullable();
+            $table->string('cityID')->nullable();
             $table->string('contactPerson')->nullable();
             $table->string('phoneNo')->unique()->nullable();
             $table->rememberToken();
