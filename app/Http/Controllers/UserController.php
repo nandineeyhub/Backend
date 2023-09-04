@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use SebastianBergmann\CodeCoverage\Node\Builder;
 use App\Models\State;
 use App\Models\City;
+use App\Models\Enquiry;
 class UserController extends Controller
 {
     public function register(Request $request){
@@ -201,10 +202,40 @@ class UserController extends Controller
        }
         return hresponse(false, null, 'Please select correct State !!');
     }
-// _________________________________________________________________ Client Status Update _______________________________________________
-    public function show(){
-        // return User::with('getState')->get();
-        return User::with(['state','city'])->get();
+// _________________________________________________________________ enquiry _______________________________________________
+    public function enquiry(Request $request){
+        $validator = Validator::make($request->all(), [
+            'clientID'=>'required',
+            'email'=>['required','email','unique:enquiries,email'],
+            'step'=>['required'],
+            'phone'=>['required','min:11','numeric'],
+            'name'=>['required'],
+            'address'=>['required'],
+            'message'=>['required'],
+            'enquiryDate'=>['required','date',],
+            'address'=>['required'],
+            'status'=>['required'],
+            'course'=>['required'],
+        ]);
+    
+        if($validator->fails()){
+            $response = $validator->messages()->first();
+            return hresponse(false, null, $response);
+        }
+
+        $enquiry =  Enquiry::create([
+            'name' => $request->name,
+            'email'=> $request->email,
+            'clientID'=> $request->clientID,
+            'phone'=> $request->phone,
+            'step'=> $request->step,
+            'address'=> $request->address,
+            'message'=> $request->message,
+            'enquiryDate'=> $request->enquiryDate,
+            'course'=> $request->course,
+        ]);
+
+        return hresponse(true, $enquiry, "Enquiry Registerd Succcessfully !!");
     }
 }
 

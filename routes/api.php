@@ -60,5 +60,4 @@ Route::middleware(['auth:sanctum'])->group(function(){
 
     Route::get('client/India/{stateID}',[UserController::class, 'showState']); 
 
-    Route::get('client',[UserController::class, 'show']); 
 });
