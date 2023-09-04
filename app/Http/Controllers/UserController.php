@@ -162,7 +162,7 @@ class UserController extends Controller
             return hresponse(false, null, 'Client Not Found !!');
         }
     }
-
+// _________________________________________________________________ Delete Client _______________________________________________
     public function deleteClient(string $id)
     {
         $client = User::find($id);
@@ -173,6 +173,7 @@ class UserController extends Controller
         return hresponse(false, null, 'Client Not Found !!');
     }
 
+// _________________________________________________________________ Client Status Update _______________________________________________
     public function clientStatusUpdate(Request $request, string $id){
         if($request->status){
             $client = User::find($id);
@@ -189,7 +190,7 @@ class UserController extends Controller
         }
         return hresponse(false, null, 'Please select status !!');
     }
-
+// _________________________________________________________________Show City _______________________________________________
     public function showCity($stateID){
        if($stateID){
         $city = City::where('stateID','=',$stateID)->get();
@@ -200,9 +201,10 @@ class UserController extends Controller
        }
         return hresponse(false, null, 'Please select correct State !!');
     }
-
+// _________________________________________________________________ Client Status Update _______________________________________________
     public function show(){
         // return User::with('getState')->get();
         return User::with(['state','city'])->get();
     }
 }
+
