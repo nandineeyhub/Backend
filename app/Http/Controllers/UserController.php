@@ -50,6 +50,8 @@ class UserController extends Controller
         return hresponse(true, $user, "Registration Succcessful !!");
     }
 
+// ______________________________________________________________ login___________________________________________
+
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -78,15 +80,19 @@ class UserController extends Controller
         return hresponse(false, null, "User Not Found !!");
     }
 
+// _________________________________________________________________________ logout _______________________________________
+
     public function logout(){
         auth()->user()->tokens()->delete();
         return hresponse(true, null, 'Logout successful !! ');
     }
+// _________________________________________________________________________ loggedUser _________________________________
 
     public function loggedUser(Request $request){
         return hresponse(true, auth()->user(), '');
     }
 
+// ____________________________________________________________________ change Password ___________________________________
     public function changePassword(Request $request){
         $request->validate([
             'password'=>['required','confirmed']
@@ -97,6 +103,7 @@ class UserController extends Controller
         return hresponse(false, auth()->user(), 'Password Changed');
     }
 
+//____________________________________________________________________ show All Clients _________________________________________ 
     public function showAllClients(Request $req){
         $res = [];
         $search = $req->search ? $req->search : "";
@@ -104,18 +111,17 @@ class UserController extends Controller
         $status = $req->status ? $req->status : "";
 
         if(!empty($search) && $status == ""){
-            $users = User::where('name','LIKE',"%".$search."%")->where('userType','=','1')->paginate($limit);
+            $users = User::with(['state','city'])->where('name','LIKE',"%".$search."%")->where('userType','=','1')->paginate($limit);
         }
         else if($status != "" && $search == ""){
-            $users = User::where('status',"=","$status")->Where('userType','=','1')->paginate($limit);
+            $users = User::with(['state','city'])->where('status',"=","$status")->Where('userType','=','1')->paginate($limit);
         }
         else if(!empty($search) && !empty($status)){
-            $users = User::where('status',"=","$status")->where('name','LIKE',"%".$search."%")->Where('userType','=','1')->paginate($limit);
+            $users = User::with(['state','city'])->with(['state','city'])->where('status',"=","$status")->where('name','LIKE',"%".$search."%")->Where('userType','=','1')->paginate($limit);
         }
         else{
-            $users = User::where('userType','1')->paginate($limit);
+            $users = User::with(['state','city'])->where('userType','1')->paginate($limit);
         }
-
         $res['users'] = $users;
         $res['totalRecord'] = $users->count();
         if($users){
@@ -124,6 +130,8 @@ class UserController extends Controller
         }
         return hresponse(false, null, 'No Record Found !!');
     }
+
+// _________________________________________________________________ Update Client _______________________________________________
 
     public function updateClient(Request $request, string $id)
     {
@@ -184,19 +192,17 @@ class UserController extends Controller
 
     public function showCity($stateID){
        if($stateID){
-        $res = [];
-        // $state = State::find($stateID);
         $city = City::where('stateID','=',$stateID)->get();
-        // dd($city);
         if(!empty($city->toArray())){
-            // dd($city);
-            $res['cities'] = $city;
-            // $res['StateName'] = $state->stateName;
-            // $res['totalCities'] = $city->count();
-            return hresponse(true, $res, 'All Available Cities list !!');
+            return hresponse(true, $city, 'All Available Cities list !!');
         }
         return hresponse(false, null, 'City Not Found !!');
        }
         return hresponse(false, null, 'Please select correct State !!');
+    }
+
+    public function show(){
+        // return User::with('getState')->get();
+        return User::with(['state','city'])->get();
     }
 }

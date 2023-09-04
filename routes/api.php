@@ -58,5 +58,7 @@ Route::middleware(['auth:sanctum'])->group(function(){
 
     Route::patch('client/status/upate/{id}',[UserController::class, 'clientStatusUpdate']);
 
-    Route::get('client/India/{stateID}',[UserController::class, 'showCity']); 
+    Route::get('client/India/{stateID}',[UserController::class, 'showState']); 
+
+    Route::get('client',[UserController::class, 'show']); 
 });
