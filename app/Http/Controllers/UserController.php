@@ -52,18 +52,18 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'email'=>['required','email'],
+            'password'=>['required']
+        ]);
+
+        if($validator->fails()){
+            $response = $validator->messages()->first();
+            return hresponse(false, null, $response);
+        }
+
         $user = User::where('email',$request->email)->first();
         if($user){
-            $validator = Validator::make($request->all(), [
-                'email'=>['required','email'],
-                'password'=>['required']
-            ]);
-    
-            if($validator->fails()){
-                $response = $validator->messages()->first();
-                return hresponse(false, null, $response);
-            }
-    
             if(Hash::check($request->password, $user->password) && $user->status == "Active"){
                 $token = $user->createToken('mytoken')->plainTextToken;
                 $user->token=$token;
@@ -187,12 +187,13 @@ class UserController extends Controller
         $res = [];
         // $state = State::find($stateID);
         $city = City::where('stateID','=',$stateID)->get();
-        dd($city);
-        if(!empty($city['items'])){
-            dd($city);
+        // dd($city);
+        if(!empty($city->toArray())){
+            // dd($city);
             $res['cities'] = $city;
-            $res['totalCities'] = $city->count();
-            return hresponse(true, $res, 'All Cities list !!');
+            // $res['StateName'] = $state->stateName;
+            // $res['totalCities'] = $city->count();
+            return hresponse(true, $res, 'All Available Cities list !!');
         }
         return hresponse(false, null, 'City Not Found !!');
        }
