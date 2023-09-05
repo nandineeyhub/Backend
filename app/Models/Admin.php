@@ -10,12 +10,12 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class User extends Authenticatable
+class Admin extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
 
-    protected $table = 'users';
+    protected $table = 'admins';
     /**
      * The attributes that are mass assignable.
      *
@@ -25,13 +25,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'phoneNo',
-        'contactPerson',
-        'address',
-        'collegeCode',
-        'stateID',
-        'countryID',
-        'cityID',
+        'status',
+        'role',
     ];
 
     /**
@@ -54,14 +49,14 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function state():HasMany
-    {
-        return $this->hasMany(State::class,'stateID','stateID');
-    }
+    // public function state():HasMany
+    // {
+    //     return $this->hasMany(State::class,'stateID','stateID');
+    // }
 
-    public function city():HasMany
-    {
-        return $this->hasMany(City::class,'cityID','cityID');
-    }
+    // public function city():HasMany
+    // {
+    //     return $this->hasMany(City::class,'cityID','cityID');
+    // }
 
 }
