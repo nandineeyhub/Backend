@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PasswordResetController;
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,17 @@ Route::post('/login',[UserController::class,'login']);
 
 Route::post('client/enquiry',[UserController::class, 'enquiry']); 
 
+
+
+
+
+
+
+
+
+
+
+
 Route::middleware(['auth:sanctum'])->group(function(){
 
     // Route::get('/students/{id}',[StudentController::class, 'show']);
@@ -59,5 +71,13 @@ Route::middleware(['auth:sanctum'])->group(function(){
     Route::delete('/client/{id}',[UserController::class, 'deleteClient']);
 
     Route::patch('client/status/upate/{id}',[UserController::class, 'clientStatusUpdate']);
+
+    Route::post('/role/add',[RoleController::class, 'addRole']);
+
+    Route::get('/role/view/{id}',[RoleController::class, 'viewRole']);
+
+    Route::delete('/role/delete/{id}',[RoleController::class, 'deleteRole']);
+    
+    Route::patch('/role/update/{id}',[RoleController::class, 'updateRole']);
 
 });
