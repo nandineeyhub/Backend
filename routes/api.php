@@ -38,6 +38,8 @@ Route::post('/register',[UserController::class,'register']);
 
 Route::post('/login',[UserController::class,'login']);
 
+Route::post('client/enquiry',[UserController::class, 'enquiry']); 
+
 Route::middleware(['auth:sanctum'])->group(function(){
 
     // Route::get('/students/{id}',[StudentController::class, 'show']);
@@ -57,7 +59,5 @@ Route::middleware(['auth:sanctum'])->group(function(){
     Route::delete('/client/{id}',[UserController::class, 'deleteClient']);
 
     Route::patch('client/status/upate/{id}',[UserController::class, 'clientStatusUpdate']);
-
-    Route::get('client/India/{stateID}',[UserController::class, 'showState']); 
 
 });
