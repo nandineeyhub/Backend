@@ -83,10 +83,10 @@ class UserController extends Controller
 
 // _________________________________________________________________________ logout _______________________________________
 
-    // public function logout(){
-    //     auth()->admin()->tokens()->delete();
-    //     return hresponse(true, null, 'Logout successful !! ');
-    // }
+    public function logout(){
+        auth()->user()->tokens()->delete();
+        return hresponse(true, null, 'Logout successful !! ');
+    }
 // _________________________________________________________________________ loggedUser _________________________________
 
     // public function loggedUser(Request $request){
