@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('role_has_permissions', function (Blueprint $table) {
+            $table->id();
             $table->integer('role_id');
             $table->string('permissions');
             $table->timestamps();

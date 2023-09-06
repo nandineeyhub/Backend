@@ -11,69 +11,54 @@ use Illuminate\Support\Facades\Validator;
 
 class RoleController extends Controller
 {
-    public function addRole(Request $request){
+    public function addRole(Request $request)
+    {
         $validator = Validator::make($request->all(), [
-            'roleName'=>'required',
-            'permission'=>['required'],
+            'roleName' => 'required',
+            'permission' => ['required'],
         ]);
-        
-        if($validator->fails()){
+
+        if ($validator->fails()) {
             $response = $validator->messages()->first();
             return hresponse(false, null, $response);
         }
-        
+
         $role =  Role::create([
             'name' => $request->roleName,
-            'slug'=> Str::slug($request->roleName,'_'),
+            'slug' => Str::slug($request->roleName, '_'),
         ]);
-        
-        $roleID = $role->id;
 
-        $rolePermission ='';
-        for($i =0; $i < count($request->permission); $i++){
-            $rolePermission =  RoleHasPermission::create([
-                'role_id' => $roleID,
-                'permissions'=> $request->permission[$i],
-            ]);
+        $data = [];
+        $permissions = [];
+        if ($role) {
+            $data['roleID'] = $role->id;
+            foreach($request->permission as $i=>$val){
+                RoleHasPermission::create([
+                    'role_id' => $role->id,
+                    'permissions' => $request->permission[$i],
+                ]);
+                $permissions[$i] = $request->permission[$i];
+            }
+            $data['permissions'] = $permissions;
+            return hresponse(true, $data, "Role and Permission Added !!");
         }
-
-        $result = RoleHasPermission::where('role_id',$roleID)->get()->toArray();
-       
-        $permission=[];
-        for($i =0; $i < count($result); $i++){
-            $permission[$i] =  $result[$i]['permissions'];
-        }
-
-        $rolePermission->permissions = $permission;
-        
-        return hresponse(true, $rolePermission, "Role and Permission Added !!");
+        return hresponse(false, null, "Role is not Added !!");
     }
 
-    public function viewRole(string $id){
-        $data=[];
-        $permission=[];
+    public function viewRole(string $id)
+    {
         $role = Role::find($id);
-        if($role){
-            $role->toArray();
-            $data['id'] = $id;
-            $data['name'] = $role['name'];
-
-            $role = RoleHasPermission::where('role_id',$id)->get();
-            
-            for($i =0; $i < count($role); $i++){
-                $permission[$i] =  $role[$i]['permissions'];
-            }
-
-            $data['permissions'] = $permission;
-
-            return hresponse(true, $data, 'Permissions Assigned to this Role !!');
+        if ($role) {
+            $data = Role::with('permissions:role_id,permissions')->findOrFail($id);
+            return hresponse(true, $data, 'List of Permissions Assigned to this Role !!');
         }
         return hresponse(false, null, 'Role Not Exist !!');
     }
 
-    public function deleteRole(String $id){
-        $role = RoleHasPermission::where('role_id',$id);
-        if($role){
+    public function deleteRole(String $id)
+    {
+        $role = RoleHasPermission::where('role_id', $id);
+        if ($role) {
             $role->delete();
             Role::find($id)->delete();
             return hresponse(true, null, 'Role Deleted Successfully !!');
@@ -81,37 +66,33 @@ class RoleController extends Controller
         return hresponse(false, null, 'Role Not Found !!');
     }
 
-    public function updateRole(Request $request, string $id){
-        $validator = Validator::make($request->all(),[
-            'permission'=> ['required'],
+    public function updateRole(Request $request, string $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'permission' => ['required'],
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             $response = $validator->messages()->first();
             return hresponse(false, null, $response);
         }
-        
-        // $role = RoleHasPermission::where('role_id',$id)->get();
-        // for($i = 0; $i < count($role); $i++){
-        //     $role[$i]['permissions'] = $request->permission[$i];
-        // }
-        // $role->save();
-
-        DB::table('role_has_permissions')
-            ->where('role_id', $id)
-            ->update(['permissions' => $request->permission]);
-//
-        // $role =  $role->toArray();
-       
-        // $permission=[];
-        // for($i =0; $i < count($role); $i++){
-        //     $permission[$i] =  $role[$i]['permissions'];
-        // }
-
-        // $->permissions = $permission;
-        
-        // return hresponse(true, $rolePermission, "Role and Permission Added !!");
-        // return hresponse(true, $client, 'Client Status Updated !!');
-
-        // return hresponse(true, $role, "Role and Permission Added !!");
+        $role = Role::find($request->id);
+        if ($role) {
+            $role->name = $request->name;
+            $role->save();
+            if ($role) {
+                RoleHasPermission::where('role_id', $role->id)->delete();
+                foreach ($request->permission as  $key => $row) {
+                    RoleHasPermission::create([
+                        'role_id' => $role->id,
+                        'permissions' => $row,
+                    ]);
+                }
+            }
+            $updatedData = Role::with('permissions:role_id,permissions')->findOrFail($request->id);
+            
+            return hresponse(true, $updatedData, "Role and Permission Added !!");
+        }
+        return hresponse(false, null, "Role not Found !!");
     }
 }
